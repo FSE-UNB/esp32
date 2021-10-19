@@ -15,6 +15,7 @@
 #include "driver/ledc.h"
 
 #include "dht11.h"
+#include "mqtt.h"
 
 /* Can use project configuration menu (idf.py menuconfig) to choose the GPIO to blink,
    or you can edit the following line and set a number here.
@@ -100,22 +101,24 @@ void app_main(void)
 
     // DHT11_init(4);
 
-    // example_ledc_init();
+    example_ledc_init();
     
     // initializaBotao();
+
+    mqtt();
 
     while(1) {
         // trataInterrupcaoBotao();
 
         /* Blink off (output low) */
-        // printf("Turning off the LED\n");
-        // update_led(LEDC_DUTY);
+        printf("Turning off the LED\n");
+        update_led(LEDC_DUTY);
         /* Blink on (output high) */
-        // printf("Turning on the LED\n");
-        // update_led(LEDC_DUTY*2);
+        printf("Turning on the LED\n");
+        update_led(LEDC_DUTY*2);
         /* Blink on (output high) */
-        // printf("Turning on the LED\n");
-        // update_led(0);
+        printf("Turning on the LED\n");
+        update_led(0);
 
         // /* Read DHT11 */
         // printf("Reading DHT11\n");
