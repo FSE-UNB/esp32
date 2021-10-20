@@ -13,9 +13,12 @@
 #include "driver/gpio.h"
 #include "sdkconfig.h"
 #include "driver/ledc.h"
+#include "esp_system.h"
 
 #include "dht11.h"
 #include "mqtt.h"
+#include "global.h"
+#include "my_nvs.h"
 
 /* Can use project configuration menu (idf.py menuconfig) to choose the GPIO to blink,
    or you can edit the following line and set a number here.
@@ -101,31 +104,46 @@ void app_main(void)
 
     // DHT11_init(4);
 
-    example_ledc_init();
-    
-    // initializaBotao();
+    init_nvs();
+
+    matricula = "0461";
+    unsigned char mac[6] = {0};
+
+    esp_efuse_mac_get_default(mac);
+
+    asprintf(&mac_str, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
 
     mqtt();
 
+
+    // example_ledc_init();
+    
+    // initializaBotao();
+
+    // subscribe em fse2021/<matricula>/dispositivos/<ID_do_dispositivo>
+    // publish em fse2021/<matricula>/dispositivos
+
+/*
     while(1) {
         // trataInterrupcaoBotao();
 
-        /* Blink off (output low) */
+        // Blink off (output low) 
         printf("Turning off the LED\n");
         update_led(LEDC_DUTY);
-        /* Blink on (output high) */
+        // Blink on (output high) 
         printf("Turning on the LED\n");
         update_led(LEDC_DUTY*2);
-        /* Blink on (output high) */
+        // Blink on (output high) 
         printf("Turning on the LED\n");
         update_led(0);
 
-        // /* Read DHT11 */
+        //  Read DHT11 
         // printf("Reading DHT11\n");
         // vTaskDelay(1000 / portTICK_PERIOD_MS);
         // struct dht11_reading s = DHT11_read();
         // printf("Status = %d | Temp: %d | Um: %d\n", s.status, s.temperature, s.humidity);
     }
+*/
 }
 
 void trataInterrupcaoBotao()

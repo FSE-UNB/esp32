@@ -29,15 +29,30 @@
 
 #include "esp_log.h"
 #include "mqtt_client.h"
+#include "mqtt.h"
+#include "my_nvs.h"
 
 static const char *TAG = "MQTT_EXAMPLE";
 
+char* device_topic;
+char* temp_topic;
+char* hum_topic;
+char* state_topic;
 
 static void log_error_if_nonzero(const char * message, int error_code)
 {
     if (error_code != 0) {
         ESP_LOGE(TAG, "Last error %s: 0x%x", message, error_code);
     }
+}
+
+void subscribe_to_place(esp_mqtt_client_handle_t client, char* place) {
+    asprintf(&temp_topic, "fse2021/%s/%s/temperatura", matricula, place);
+    esp_mqtt_client_subscribe(client, temp_topic, 0);
+    asprintf(&hum_topic, "fse2021/%s/%s/umidade", matricula, place);
+    esp_mqtt_client_subscribe(client, hum_topic, 0);
+    asprintf(&state_topic, "fse2021/%s/%s/estado", matricula, place);
+    esp_mqtt_client_subscribe(client, state_topic, 0);
 }
 
 static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
@@ -48,17 +63,22 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
     switch (event->event_id) {
         case MQTT_EVENT_CONNECTED:
             ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
-            msg_id = esp_mqtt_client_publish(client, "/topic/qos1", "data_3", 0, 1, 0);
-            ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
+            asprintf(&device_topic, "fse2021/%s/dispositivos/%s", matricula, mac_str);
+            msg_id = esp_mqtt_client_subscribe(client, device_topic, 0);
 
-            msg_id = esp_mqtt_client_subscribe(client, "/topic/qos0", 0);
-            ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
+            char* generic_topic;
+            asprintf(&generic_topic, "fse2021/%s/dispositivos", matricula);
 
-            msg_id = esp_mqtt_client_subscribe(client, "/topic/qos1", 1);
-            ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
+            char* place = get_nvs_value();
+            printf("place %s\n", place);
 
-            msg_id = esp_mqtt_client_unsubscribe(client, "/topic/qos1");
-            ESP_LOGI(TAG, "sent unsubscribe successful, msg_id=%d", msg_id);
+            if (strlen(place) == 0) {
+                msg_id = esp_mqtt_client_publish(client, generic_topic, mac_str, 0, 1, 0);
+                ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
+            } else {
+                printf("achou place\n");
+                subscribe_to_place(client, place);
+            }
             break;
         case MQTT_EVENT_DISCONNECTED:
             ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
@@ -77,6 +97,22 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
             break;
         case MQTT_EVENT_DATA:
             ESP_LOGI(TAG, "MQTT_EVENT_DATA");
+            char* event_topic;
+            asprintf(&event_topic, "%.*s", event->topic_len, event->topic);
+            char* event_data;
+            asprintf(&event_data, "%.*s", event->data_len, event->data);
+            
+            if (strcmp(event_topic, device_topic) == 0) {
+                set_nvs_value(event_data);
+                subscribe_to_place(client, event_data);
+            } else if (strcmp(event_topic, temp_topic) == 0) {
+
+            } else if (strcmp(event_topic, hum_topic) == 0) {
+
+            } else if (strcmp(event_topic, state_topic) == 0) {
+
+            }
+
             printf("TOPIC=%.*s\r\n", event->topic_len, event->topic);
             printf("DATA=%.*s\r\n", event->data_len, event->data);
             break;
@@ -105,7 +141,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 static void mqtt_app_start(void)
 {
     esp_mqtt_client_config_t mqtt_cfg = {
-        .uri = 'mqtt://broker.hivemq.com',
+        .uri = "mqtt://broker.hivemq.com",
     };
 
     esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_cfg);
@@ -137,5 +173,5 @@ void mqtt(void)
      */
     ESP_ERROR_CHECK(example_connect());
 
-    // mqtt_app_start();
+    mqtt_app_start();
 }
