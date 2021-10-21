@@ -3,6 +3,6 @@
 
 #include "global.h"
 
-void mqtt(void);
+void mqtt_start(void);
 
 #endif
