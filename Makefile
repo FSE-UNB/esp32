@@ -3,6 +3,6 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := blink
+PROJECT_NAME := proj3-fse
 
 include $(IDF_PATH)/make/project.mk
