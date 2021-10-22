@@ -31,6 +31,6 @@ static void update_led(uint32_t duty) {
 }
 
 void set_led_brightness(float brightness) {
-    uint32_t duty = (uint32_t) LEDC_DUTY_FORCE * (1.0 - brightness);
+    uint32_t duty = (uint32_t) LEDC_DUTY_FORCE * brightness;
     update_led(duty);
 }

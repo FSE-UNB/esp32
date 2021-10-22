@@ -28,9 +28,50 @@ void wifi_connection(void* params) {
     }
 }
 
+void read_avarage_dht11() {
+    int count = 0;
+    int count_success = 0;
+    int temperature = 0;
+    int humidity = 0;
+
+    while (1) {
+        struct dht11_reading s = DHT11_read();
+
+        if (s.temperature >= 0 || s.humidity >= 0) {
+            temperature += s.temperature;
+            humidity += s.humidity;
+            count_success++;
+
+            printf("\n\nStatus (%d) = Temp: %d | Um: %d\n\n", count, s.temperature, s.humidity);
+        }
+
+        count++;
+
+        if (count == 5) {
+            char* message_temperature;
+            char* message_humidity;
+            
+            asprintf(&message_temperature, "%.2f", (float) temperature / count_success);
+            asprintf(&message_humidity, "%.2f", (float) humidity / count_success);
+
+            send_message_to_topic(message_temperature, "temperatura");
+            send_message_to_topic(message_humidity, "umidade");
+
+            printf("Status = Temp: %s | Um: %s\n", message_temperature, message_humidity);
+
+            count = 0;
+            count_success = 0;
+            temperature = 0;
+            humidity = 0;
+        }
+
+        vTaskDelay(2000 / portTICK_PERIOD_MS);
+    }
+}
+
 void app_main(void)
 {
-    // DHT11_init(4);
+    DHT11_init(4);
 
     init_nvs();
 
@@ -47,19 +88,5 @@ void app_main(void)
 
     init_led();
 
-    while(1) {
-        printf("LED 100%%\n");
-        set_led_brightness(1.0);
-        printf("LED 50%%\n");
-        set_led_brightness(0.5);
-        printf("LED 0%%\n");
-        set_led_brightness(0);
-
-        //  Read DHT11 
-        // printf("Reading DHT11\n");
-        // vTaskDelay(1000 / portTICK_PERIOD_MS);
-        // struct dht11_reading s = DHT11_read();
-        // printf("Status = %d | Temp: %d | Um: %d\n", s.status, s.temperature, s.humidity);
-    }
-
+    read_avarage_dht11();
 }

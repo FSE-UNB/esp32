@@ -1,3 +1,11 @@
 {
-  "C_Cpp.intelliSenseEngine": "Tag Parser"
+  "C_Cpp.intelliSenseEngine": "Tag Parser",
+  "files.associations": {
+    "system_error": "c",
+    "*.ipp": "c",
+    "cstring": "c",
+    "mqtt.h": "c",
+    "button.h": "c",
+    "dht11.h": "c"
+  }
 }

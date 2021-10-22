@@ -47,12 +47,12 @@ void button_interruption()
                 }
 
                 button_state =! button_state;
+
+                char* value;
                 
-                if (button_state) {
-                    printf("botao ligado\n");
-                } else {
-                    printf("botao desligado\n");
-                }
+                asprintf(&value, "%d", button_state);
+                send_message_to_topic(value, "estado");
+
                 // Habilitar novamente a interrupção
                 vTaskDelay(50 / portTICK_PERIOD_MS);
                 gpio_isr_handler_add(pin, gpio_isr_handler, (void *)pin);

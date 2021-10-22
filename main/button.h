@@ -5,6 +5,8 @@
 #include "freertos/queue.h"
 #include "driver/gpio.h"
 
+#include "mqtt.h"
+
 #define BUTTON_GPIO 0
 
 void init_button();
