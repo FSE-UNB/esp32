@@ -3,6 +3,7 @@
 extern xQueueHandle button_queue;
 
 int button_state = 0;
+clock_t before, difference;
 
 static void IRAM_ATTR gpio_isr_handler(void *args)
 {
@@ -21,7 +22,7 @@ void init_button()
     gpio_pulldown_en(BUTTON_GPIO);
     // Desabilita o resistor de Pull-up por segurança.
     gpio_pullup_dis(BUTTON_GPIO);
-    gpio_set_intr_type(BUTTON_GPIO, GPIO_INTR_POSEDGE);
+    gpio_set_intr_type(BUTTON_GPIO, GPIO_INTR_ANYEDGE);
 
     gpio_install_isr_service(0);
     gpio_isr_handler_add(BUTTON_GPIO, gpio_isr_handler, (void *)BUTTON_GPIO);
@@ -38,24 +39,26 @@ void button_interruption()
         {
             // De-bouncing
             int state = gpio_get_level(pin);
-            if (state == 1)
-            {
-                gpio_isr_handler_remove(pin);
-                while (gpio_get_level(pin) == state)
-                {
-                    vTaskDelay(50 / portTICK_PERIOD_MS);
+
+            if (state == 0) {
+                before = clock();
+            }
+            if (state == 1) {
+                difference = clock() - before;
+                int msec = difference / CLOCKS_PER_SEC;
+
+                printf("\nBotão foi apertado por %d segundos\n", msec);
+
+                if (msec < 3) {
+                    button_state =! button_state;
+
+                    char* value;
+                    
+                    asprintf(&value, "%d", button_state);
+                    send_message_to_topic(value, "estado");
+                } else {
+                    printf("\n\n\nRESET\n\n\n\n");
                 }
-
-                button_state =! button_state;
-
-                char* value;
-                
-                asprintf(&value, "%d", button_state);
-                send_message_to_topic(value, "estado");
-
-                // Habilitar novamente a interrupção
-                vTaskDelay(50 / portTICK_PERIOD_MS);
-                gpio_isr_handler_add(pin, gpio_isr_handler, (void *)pin);
             }
         }
     }
