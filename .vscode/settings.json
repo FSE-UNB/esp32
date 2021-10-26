@@ -6,6 +6,9 @@
     "cstring": "c",
     "mqtt.h": "c",
     "button.h": "c",
-    "dht11.h": "c"
+    "dht11.h": "c",
+    "string_view": "c",
+    "chrono": "c",
+    "algorithm": "c"
   }
 }
