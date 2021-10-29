@@ -7,6 +7,7 @@
 #include "time.h"
 
 #include "mqtt.h"
+#include "global.h"
 
 #define BUTTON_GPIO 0
 

@@ -63,6 +63,11 @@ void send_message_to_topic(char *value, char *topic_type) {
     esp_mqtt_client_publish(client, topic, message, 0, 1, 0);
 }
 
+void send_ready_config_message() {
+    bzero(place, strlen(place));
+    esp_mqtt_client_publish(client, device_topic, mac_str, 0, 1, 0);
+}
+
 static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
 {
     client = event->client;

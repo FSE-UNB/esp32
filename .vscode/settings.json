@@ -10,5 +10,6 @@
     "string_view": "c",
     "chrono": "c",
     "algorithm": "c"
-  }
+  },
+  "cmake.configureOnOpen": false
 }

@@ -57,7 +57,8 @@ void button_interruption()
                     asprintf(&value, "%d", button_state);
                     send_message_to_topic(value, "estado");
                 } else {
-                    printf("\n\n\nRESET\n\n\n\n");
+                    printf("Reset\n");
+                    send_ready_config_message();
                 }
             }
         }
