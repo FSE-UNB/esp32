@@ -9,13 +9,13 @@ menu "Configurações do Projeto"
 
     config ESP_WIFI_SSID
         string "WiFi SSID"
-        default "Geova oi fibra 2.4g"
+        default "SSID"
         help
             Nome da rede Wifi.
 
     config ESP_WIFI_PASSWORD
         string "Senha do Wifi"
-        default "0588ge85"
+        default "PASS"
         help
             Senha do WiFi (WPA ou WPA2).
 
