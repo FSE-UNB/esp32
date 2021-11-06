@@ -1,14 +1,21 @@
 menu "Configurações do Projeto"
 
+    config LOW_POWER
+        int "Low Power"
+        default 0
+        range 0 1
+        help
+            Modo da Esp 32
+
     config ESP_WIFI_SSID
         string "WiFi SSID"
-        default "ssid"
+        default "Geova oi fibra 2.4g"
         help
             Nome da rede Wifi.
 
     config ESP_WIFI_PASSWORD
         string "Senha do Wifi"
-        default "minha_senha"
+        default "0588ge85"
         help
             Senha do WiFi (WPA ou WPA2).
 

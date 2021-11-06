@@ -31,6 +31,8 @@
 #include "mqtt.h"
 #include "my_nvs.h"
 
+#include "sdkconfig.h"
+
 static const char *TAG = "MQTT";
 
 char* device_topic;
@@ -63,13 +65,22 @@ void send_message_to_topic(char *value, char *topic_type) {
     esp_mqtt_client_publish(client, topic, message, 0, 1, 0);
 }
 
-void send_ready_config_message() {
-    bzero(place, strlen(place));
-    esp_mqtt_client_publish(client, device_topic, mac_str, 0, 1, 0);
+void send_ping_message() {
+    // if (strlen(place) == 0) return;
+
+    esp_mqtt_client_publish(client, device_topic, "{ \"type\": \"ping\" }", 0, 1, 0);
 }
 
-static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
-{
+int send_ready_config_message() {
+    bzero(place, strlen(place));
+    erase_nvs();
+    char* message;
+
+    asprintf(&message, "{ \"esp_id\": \"%s\", \"low_power\": %d }", mac_str, CONFIG_LOW_POWER);
+    return esp_mqtt_client_publish(client, device_topic, message, 0, 1, 0);
+}
+
+static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event) {
     client = event->client;
     int msg_id;
 
@@ -78,11 +89,15 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
             ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
             asprintf(&device_topic, "fse2021/%s/dispositivos/%s", matricula, mac_str);
 
+            char* message;
+
+            asprintf(&message, "{ \"esp_id\": \"%s\", \"low_power\": %d }", mac_str, CONFIG_LOW_POWER);
+
             place = get_nvs_value();
             printf("place %s\n", place);
 
             if (strlen(place) == 0) {
-                msg_id = esp_mqtt_client_publish(client, device_topic, mac_str, 0, 1, 0);
+                msg_id = send_ready_config_message();
                 ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
             }
 
@@ -121,11 +136,10 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
                 place = json.place;
             } else if (strcmp(json.type, "output") == 0) {
                 if (strlen(place) > 0){
-                    set_led_brightness(json.value);                
+                    set_led_brightness(json.value);
                 }
             } else if (strcmp(json.type, "unconfig") == 0) {
-                bzero(place, strlen(place));
-                esp_mqtt_client_publish(client, device_topic, mac_str, 0, 1, 0);
+                msg_id = send_ready_config_message();
             }
 
             printf("TOPIC=%.*s\r\n", event->topic_len, event->topic);

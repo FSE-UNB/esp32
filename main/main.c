@@ -8,6 +8,8 @@
 #include "button.h"
 #include "led.h"
 
+#include "sdkconfig.h"
+
 xSemaphoreHandle conexaoWifiSemaphore;
 xQueueHandle button_queue;
 
@@ -25,6 +27,13 @@ void wifi_connection(void* params) {
         if (xSemaphoreTake(conexaoWifiSemaphore, portMAX_DELAY)) {
             mqtt_start();
         }
+    }
+}
+
+void ping_low_power(void* params) {
+    while(1) {
+        send_ping_message();
+        vTaskDelay(10000 / portTICK_PERIOD_MS);
     }
 }
 
@@ -71,8 +80,6 @@ void read_avarage_dht11() {
 
 void app_main(void)
 {
-    DHT11_init(4);
-
     init_nvs();
 
     matricula = "0461";
@@ -86,7 +93,13 @@ void app_main(void)
 
     xTaskCreate(&button_interruption, "Interrupções do botão", 4096, NULL, 1, NULL);
 
-    init_led();
+    if (CONFIG_LOW_POWER == 0) {
+        DHT11_init(4);
 
-    read_avarage_dht11();
+        init_led();
+
+        read_avarage_dht11();
+    } else {
+        xTaskCreate(&ping_low_power, "Ping do Low Power", 4096, NULL, 1, NULL);
+    }
 }

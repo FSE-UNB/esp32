@@ -31,6 +31,10 @@ void set_nvs_value(char* place) {
     nvs_commit(my_handle);
 }
 
+void erase_nvs() {
+    nvs_flash_erase();
+}
+
 void close_nvs() {
     printf("fechando nvs\n");
     nvs_close(my_handle);

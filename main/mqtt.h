@@ -7,6 +7,7 @@
 
 void mqtt_start(void);
 void send_message_to_topic(char *message, char *topic);
-void send_ready_config_message();
+int send_ready_config_message();
+void send_ping_message();
 
 #endif
